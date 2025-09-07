@@ -1,32 +1,32 @@
-!DOCTYPE html
-html lang=pt-br
-head
-    meta charset=UTF-8
-    meta name=viewport content=width=device-width, initial-scale=1.0
-    titleJogo do Bilhão - Jogadortitle
-    link rel=stylesheet href=style.css
-    script type=module src=httpswww.gstatic.comfirebasejs9.6.1firebase-app-compat.jsscript
-    script type=module src=httpswww.gstatic.comfirebasejs9.6.1firebase-database-compat.jsscript
-head
-body
-    div class=player-container
-        div id=join-screen class=player-screen join-form
-            h1 class=game-titleEntrar no Jogoh1
-            input type=text id=player-name placeholder=Digite seu nome
-            button id=join-btn class=control-btnConectarbutton
-        div
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo do Bilhão - Jogador</title>
+    <link rel="stylesheet" href="../style.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+</head>
+<body>
+    <div class="player-container">
+        <div id="join-screen" class="player-screen join-form">
+            <h1 class="game-title">Entrar no Jogo</h1>
+            <input type="text" id="player-name" placeholder="Digite seu nome">
+            <button id="join-btn" class="control-btn">Conectar</button>
+        </div>
 
-        div id=game-screen class=player-screen style=display none;
-            h1 id=player-welcomeh1
-            div id=question-area class=question-box
-                p id=player-questionAguardando a próxima pergunta...p
-                div id=player-optionsdiv
-            div
-            p id=player-statusp
-        div
-    div
+        <div id="game-screen" class="player-screen" style="display: none;">
+            <h1 id="player-welcome"></h1>
+            <div id="question-area" class="question-box">
+                <p id="player-question">Aguardando a próxima pergunta...</p>
+                <div id="player-options"></div>
+            </div>
+            <p id="player-status"></p>
+        </div>
+    </div>
 
-    script type=module src=firebase-config.jsscript
-    script type=module src=player.jsscript
-body
-html
+    <script type="module" src="../firebase-config.js"></script>
+    <script type="module" src="./player.js"></script>
+</body>
+</html>
