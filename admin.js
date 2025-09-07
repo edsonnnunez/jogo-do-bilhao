@@ -69,21 +69,6 @@ const startGame = () => {
         currentQuestionIndex: 0,
         currentQuestion: null,
         timer: 5
-    }).then(() => {
-        let prepareTime = 5;
-        countdownEl.textContent = prepareTime;
-        const prepareInterval = setInterval(() => {
-            prepareTime--;
-            countdownEl.textContent = prepareTime;
-            if (prepareTime <= 0) {
-                clearInterval(prepareInterval);
-                gameRef.update({
-                    status: 'active',
-                    currentQuestion: questions[0],
-                    timer: 15
-                });
-            }
-        }, 1000);
     });
 };
 
@@ -125,7 +110,7 @@ const nextQuestion = () => {
                     currentQuestionIndex: nextIndex,
                     currentQuestion: nextQuestion,
                     status: 'active',
-                    timer: 15 // O timer é reiniciado aqui
+                    timer: 15
                 });
             }
         } else {
@@ -166,7 +151,6 @@ const updateUI = (gameData) => {
         }
         gameInfo.style.display = 'block';
         qrCodeContainer.style.display = 'none';
-        startTimer(); // AQUI O TIMER É INICIADO PARA CADA NOVA PERGUNTA
     } else if (isGamePaused) {
         currentQuestionEl.textContent = 'Rodada Finalizada!';
     } else if (isGameFinished) {
@@ -186,6 +170,7 @@ const updateUI = (gameData) => {
     }
 };
 
+// Event Listeners
 startBtn.addEventListener('click', startGame);
 pauseBtn.addEventListener('click', () => gameRef.update({ status: 'paused' }));
 resumeBtn.addEventListener('click', () => gameRef.update({ status: 'active' }));
@@ -199,22 +184,25 @@ nextRoundBtn.addEventListener('click', () => {
             currentQuestionIndex: nextIndex,
             currentQuestion: questions[nextIndex],
             status: 'active',
-            timer: 15 // Tempo da próxima rodada
+            timer: 15
         });
     });
 });
 
+// Listener principal do Firebase
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     updateUI(gameData);
-    if (gameData && gameData.status !== 'active') {
+
+    if (gameData && gameData.status === 'active' && timerInterval === null) {
+        startTimer();
+    } else if (gameData && gameData.status !== 'active') {
         clearInterval(timerInterval);
         timerInterval = null;
-        countdownSound.pause();
-        countdownSound.currentTime = 0;
     }
 });
 
+// Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     loadQuestions().then(() => {
         resetGame();
