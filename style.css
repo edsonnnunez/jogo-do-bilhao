@@ -1,7 +1,12 @@
+/*
+ * JOGO DO BILHÃO - ESTÉTICA SHOW DO MILHÃO
+ * Fundo escuro, brilhos neon e tipografia impactante.
+ */
+
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700&display=swap');
 
 body {
-    background-color: #111;
+    background-color: #0d1117;
     color: #eee;
     font-family: 'Montserrat', sans-serif;
     text-align: center;
@@ -13,140 +18,162 @@ body {
     min-height: 100vh;
 }
 
-h1, h2, h3 {
+/* Títulos principais e botões com a fonte do programa */
+h1, h2, h3, button, .timer {
     font-family: 'Bebas Neue', cursive;
     letter-spacing: 2px;
 }
 
+/* Container principal com borda neon */
 .container {
-    background-color: #222;
+    background: linear-gradient(145deg, #1b2028, #11141a);
     border: 2px solid #00FFFF;
-    box-shadow: 0 0 20px #00FFFF, 0 0 40px #00FFFF;
+    box-shadow: 0 0 20px #00FFFF, 0 0 40px #00FFFF, inset 0 0 10px #00FFFF;
     padding: 30px;
     border-radius: 15px;
     width: 90%;
-    max-width: 800px;
+    max-width: 900px;
+    border-radius: 20px;
 }
 
+/* Estilo da tela da TV */
 .tv-screen {
     background-color: #000;
     border: 5px solid #FFD700;
-    box-shadow: 0 0 30px #FFD700;
+    box-shadow: 0 0 30px #FFD700, inset 0 0 15px #FFD700;
     padding: 20px;
-    border-radius: 10px;
-    min-height: 500px;
+    border-radius: 15px;
+    min-height: 550px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
+/* Título do jogo com brilho dourado */
 h1.game-title {
-    font-size: 3em;
+    font-size: 3.5em;
     color: #FFD700;
     text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700;
     margin-bottom: 20px;
 }
 
+/* Contêiner da pergunta com borda e brilho azul */
 .question-box {
     background: #000;
     border: 2px solid #00FFFF;
-    padding: 20px;
+    box-shadow: 0 0 10px #00FFFF, inset 0 0 5px #00FFFF;
+    padding: 25px;
     border-radius: 10px;
-    margin-bottom: 20px;
-    font-size: 1.5em;
+    font-size: 1.8em;
     text-shadow: 0 0 5px #00FFFF;
+    margin-bottom: 20px;
 }
 
+/* Texto da pergunta */
+#current-question-text {
+    color: #eee;
+}
+
+/* Relógio com brilho dourado */
 .timer {
-    font-family: 'Bebas Neue', cursive;
-    font-size: 4em;
+    font-size: 5em;
     color: #FFD700;
     text-shadow: 0 0 10px #FFD700;
 }
 
-.options-list {
-    list-style: none;
-    padding: 0;
-}
-
-.option-btn {
-    width: 100%;
-    padding: 15px;
-    margin: 10px 0;
-    font-size: 1.2em;
-    font-weight: bold;
-    background-color: #333;
-    color: #fff;
-    border: 2px solid #00FFFF;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-.option-btn:hover {
-    background-color: #00FFFF;
-    color: #000;
-}
-
-.option-btn.selected {
-    background-color: #FFD700;
-    color: #000;
-}
-
-.controls {
+/* Layout dos botões de controle e placar */
+.controls, .scoreboard {
     margin-top: 20px;
 }
 
+/* Estilo dos botões de controle */
 .control-btn {
-    padding: 10px 20px;
-    margin: 5px;
-    font-size: 1em;
+    padding: 12px 25px;
+    margin: 8px;
+    font-size: 1.1em;
     font-weight: bold;
-    color: #000;
+    color: #0d1117;
     background-color: #FFD700;
     border: none;
-    border-radius: 5px;
+    border-radius: 8px;
     cursor: pointer;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, transform 0.2s;
+    text-shadow: none;
 }
 
 .control-btn:hover {
     background-color: #fff;
+    transform: scale(1.05);
 }
 
+/* Placar */
 .scoreboard {
-    margin-top: 30px;
     text-align: left;
     color: #eee;
 }
 
 .player-score {
-    padding: 5px 0;
-    border-bottom: 1px solid #555;
+    padding: 8px 0;
+    border-bottom: 1px solid #444;
 }
 
-/* Player Screen */
+/* Estilo da tela do jogador */
 .player-container {
-    background: #111;
+    background-color: #0d1117;
     color: #eee;
-    padding: 20px;
     min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
 }
 
 .player-screen {
-    background-color: #222;
-    padding: 20px;
-    border-radius: 10px;
+    background-color: #1a1e24;
+    padding: 25px;
+    border-radius: 15px;
     border: 2px solid #00FFFF;
-}
-
-.join-form {
+    box-shadow: 0 0 15px #00FFFF;
+    width: 90%;
+    max-width: 450px;
     text-align: center;
 }
 
 .join-form input {
-    padding: 10px;
+    padding: 12px;
     font-size: 1.2em;
     width: 80%;
-    margin-bottom: 10px;
-    background: #444;
+    margin-bottom: 15px;
+    background: #2b323c;
     border: 1px solid #00FFFF;
     color: #eee;
+    border-radius: 8px;
+}
+
+/* Estilo dos botões de opção do jogador */
+.option-btn {
+    width: 100%;
+    padding: 18px;
+    margin: 12px 0;
+    font-size: 1.4em;
+    font-weight: bold;
+    background-color: #1a1e24;
+    color: #fff;
+    border: 2px solid #FFD700;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+    text-shadow: 0 0 5px #FFD700;
+}
+
+.option-btn:hover {
+    background-color: #FFD700;
+    color: #000;
+    box-shadow: 0 0 10px #FFD700;
+}
+
+.option-btn.selected {
+    background-color: #FFD700;
+    color: #000;
+    box-shadow: 0 0 15px #FFD700;
 }
