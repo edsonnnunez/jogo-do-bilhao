@@ -50,6 +50,9 @@ gameRef.on('value', (snapshot) => {
         console.error("Dados do jogo não encontrados no Firebase.");
         return;
     }
+    
+    // Log para depuração
+    console.log("Estado do jogo no Firebase:", gameData.status);
 
     if (gameData.status === 'waiting') {
         playerQuestionEl.textContent = 'Aguardando o jogo começar...';
@@ -59,19 +62,27 @@ gameRef.on('value', (snapshot) => {
         playerQuestionEl.textContent = 'PREPARE-SE PARA AS PERGUNTAS!';
         playerOptionsEl.innerHTML = '';
         playerStatusEl.textContent = 'Aguarde a contagem regressiva...';
-    } else if (gameData.currentQuestion && gameData.status === 'active') {
+    } else if (gameData.status === 'active') {
         const question = gameData.currentQuestion;
-        playerQuestionEl.textContent = question.pergunta;
-        playerOptionsEl.innerHTML = '';
-        playerStatusEl.textContent = 'Escolha sua resposta!';
-        
-        question.opcoes.forEach(option => {
-            const button = document.createElement('button');
-            button.className = 'option-btn';
-            button.textContent = option;
-            button.onclick = () => handleAnswer(option);
-            playerOptionsEl.appendChild(button);
-        });
+        if (question) {
+            console.log("Pergunta recebida:", question.pergunta);
+            playerQuestionEl.textContent = question.pergunta;
+            playerOptionsEl.innerHTML = '';
+            playerStatusEl.textContent = 'Escolha sua resposta!';
+            
+            question.opcoes.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.onclick = () => handleAnswer(option);
+                playerOptionsEl.appendChild(button);
+            });
+        } else {
+            // Este caso previne o bug de a pergunta não aparecer
+            playerQuestionEl.textContent = 'Aguardando a próxima pergunta...';
+            playerOptionsEl.innerHTML = '';
+            playerStatusEl.textContent = '';
+        }
     } else if (gameData.status === 'paused') {
         playerQuestionEl.textContent = 'Rodada finalizada. Aguardando a próxima...';
         playerOptionsEl.innerHTML = '';
