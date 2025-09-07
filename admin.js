@@ -30,7 +30,7 @@ const finalWinSound = new Audio('assets/final_win.mp3');
 
 const resetGame = () => {
     gameRef.set({
-        status: 'waiting', // Estado inicial
+        status: 'waiting',
         currentQuestionIndex: -1,
         scores: {},
         currentQuestion: null,
@@ -50,11 +50,20 @@ const loadQuestions = async () => {
 };
 
 const startGame = () => {
+    console.log("Botão Começar Jogo clicado. Iniciando jogo...");
     qrCodeContainer.style.display = 'none';
     gameInfo.style.display = 'block';
     startSound.pause();
     startSound.currentTime = 0;
-    gameRef.update({ status: 'active', currentQuestionIndex: 0 });
+    // Toca o som de início do jogo
+    // startSound.play(); 
+    gameRef.update({ status: 'active', currentQuestionIndex: 0 })
+        .then(() => {
+            console.log("Status do jogo atualizado para 'active' no Firebase.");
+        })
+        .catch((error) => {
+            console.error("Erro ao atualizar o status do jogo:", error);
+        });
 };
 
 const startTimer = () => {
@@ -185,7 +194,8 @@ gameRef.on('value', (snapshot) => {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadQuestions();
-    const playerUrl = window.location.href.replace('index.html', 'player/');
+    // Gera o QR Code com o link exato que você precisa
+    const playerUrl = "https://edsonnnunez.github.io/jogo-do-bilhao/player/index.html";
     new QRCode(document.getElementById("qrcode"), {
         text: playerUrl,
         width: 256,
