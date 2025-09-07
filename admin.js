@@ -29,6 +29,7 @@ const finalWinSound = new Audio('assets/final_win.mp3');
 // --- Funções de Controle ---
 
 const resetGame = () => {
+    console.log("Reiniciando jogo...");
     gameRef.set({
         status: 'waiting',
         currentQuestionIndex: -1,
@@ -47,22 +48,37 @@ const loadQuestions = async () => {
     const response = await fetch('questions.json');
     questions = await response.json();
     console.log("Perguntas carregadas:", questions);
+    if (questions.length > 0) {
+        console.log("Perguntas carregadas com sucesso. Pronto para iniciar o jogo.");
+    } else {
+        console.error("Nenhuma pergunta encontrada no arquivo questions.json.");
+    }
 };
 
 const startGame = () => {
-    console.log("Botão Começar Jogo clicado. Iniciando jogo...");
-    qrCodeContainer.style.display = 'none';
-    gameInfo.style.display = 'block';
-    startSound.pause();
-    startSound.currentTime = 0;
-    // Toca o som de início do jogo
-    // startSound.play(); 
+    console.log("Botão Começar Jogo clicado.");
+
+    if (!questions || questions.length === 0) {
+        console.error("As perguntas não foram carregadas. Não é possível iniciar o jogo.");
+        return; // Impede que o jogo comece sem as perguntas
+    }
+    
     gameRef.update({ status: 'active', currentQuestionIndex: 0 })
         .then(() => {
             console.log("Status do jogo atualizado para 'active' no Firebase.");
+            qrCodeContainer.style.display = 'none';
+            gameInfo.style.display = 'block';
+            startSound.pause();
+            startSound.currentTime = 0;
+            updateUI({
+                status: 'active',
+                currentQuestionIndex: 0,
+                currentQuestion: questions[0]
+            });
+            startTimer();
         })
         .catch((error) => {
-            console.error("Erro ao atualizar o status do jogo:", error);
+            console.error("Erro ao iniciar o jogo no Firebase:", error);
         });
 };
 
@@ -162,7 +178,7 @@ const updateUI = (gameData) => {
 
 startBtn.addEventListener('click', startGame);
 pauseBtn.addEventListener('click', () => gameRef.update({ status: 'paused' }));
-resumeBtn.addEventListener('click', () => gameRef.update({ status: 'active', currentQuestion: questions[gameData.currentQuestionIndex] }));
+resumeBtn.addEventListener('click', () => gameRef.update({ status: 'active' }));
 nextBtn.addEventListener('click', nextQuestion);
 restartBtn.addEventListener('click', resetGame);
 nextRoundBtn.addEventListener('click', () => {
@@ -193,17 +209,18 @@ gameRef.on('value', (snapshot) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    loadQuestions();
-    // Gera o QR Code com o link exato que você precisa
-    const playerUrl = "https://edsonnnunez.github.io/jogo-do-bilhao/player/index.html";
-    new QRCode(document.getElementById("qrcode"), {
-        text: playerUrl,
-        width: 256,
-        height: 256,
-        colorDark: "#FFD700",
-        colorLight: "#222222",
-        correctLevel: QRCode.CorrectLevel.H
+    loadQuestions().then(() => {
+        resetGame();
+        const playerUrl = "https://edsonnnunez.github.io/jogo-do-bilhao/player/index.html";
+        new QRCode(document.getElementById("qrcode"), {
+            text: playerUrl,
+            width: 256,
+            height: 256,
+            colorDark: "#FFD700",
+            colorLight: "#222222",
+            correctLevel: QRCode.CorrectLevel.H
+        });
+        startSound.loop = true;
+        startSound.play();
     });
-    startSound.loop = true;
-    startSound.play();
 });
