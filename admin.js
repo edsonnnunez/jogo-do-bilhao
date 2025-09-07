@@ -30,7 +30,7 @@ const finalWinSound = new Audio('assets/final_win.mp3');
 
 const resetGame = () => {
     gameRef.set({
-        status: 'waiting',
+        status: 'waiting', // Estado inicial
         currentQuestionIndex: -1,
         scores: {},
         currentQuestion: null,
@@ -113,15 +113,20 @@ const updateUI = (gameData) => {
     const isGameActive = gameData.status === 'active';
     const isGamePaused = gameData.status === 'paused';
     const isGameFinished = gameData.status === 'finished';
+    const isGameWaiting = gameData.status === 'waiting';
 
-    startBtn.style.display = (gameData.status === 'waiting' || isGameFinished) ? 'inline-block' : 'none';
+    startBtn.style.display = (isGameWaiting || isGameFinished) ? 'inline-block' : 'none';
     pauseBtn.style.display = isGameActive ? 'inline-block' : 'none';
     resumeBtn.style.display = isGamePaused ? 'inline-block' : 'none';
     nextBtn.style.display = isGameActive ? 'inline-block' : 'none';
     restartBtn.style.display = 'inline-block';
     nextRoundBtn.style.display = (gameData.currentQuestionIndex % 10 === 9 && isGamePaused) ? 'inline-block' : 'none';
 
-    if (isGameActive) {
+    if (isGameWaiting) {
+        currentQuestionEl.textContent = 'Pressione "Começar Jogo" para iniciar!';
+        gameInfo.style.display = 'block';
+        qrCodeContainer.style.display = 'flex';
+    } else if (isGameActive) {
         if (gameData.currentQuestion) {
             currentQuestionEl.textContent = `Pergunta ${gameData.currentQuestionIndex + 1}: ${gameData.currentQuestion.pergunta}`;
         }
@@ -132,8 +137,6 @@ const updateUI = (gameData) => {
     } else if (isGameFinished) {
         currentQuestionEl.textContent = 'Fim do Jogo!';
         gameTitleEl.textContent = 'Parabéns!';
-    } else {
-        currentQuestionEl.textContent = 'Pressione "Começar Jogo" para iniciar!';
     }
     
     scoresListEl.innerHTML = '';
