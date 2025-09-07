@@ -37,7 +37,6 @@ const resetGame = () => {
         currentQuestion: null,
         timer: 60
     });
-    // Força a mudança de tela para o estado de espera
     qrCodeContainer.style.display = 'flex';
     gameInfo.style.display = 'none';
     startBtn.style.display = 'inline-block';
@@ -61,16 +60,32 @@ const startGame = () => {
     
     if (!questions || questions.length === 0) {
         console.error("As perguntas não foram carregadas. Não é possível iniciar o jogo.");
-        // Exibe uma mensagem de erro na tela para o usuário
         currentQuestionEl.textContent = "Erro: Perguntas não carregadas. Tente recarregar a página.";
         return; 
     }
     
-    // Atualiza o estado no Firebase
     gameRef.update({ 
-        status: 'active', 
+        status: 'prepare', 
         currentQuestionIndex: 0,
-        currentQuestion: questions[0]
+        currentQuestion: null, // Limpa a pergunta enquanto prepara
+        timer: 5
+    }).then(() => {
+        // Inicia a contagem de preparação
+        let prepareTime = 5;
+        countdownEl.textContent = prepareTime;
+        const prepareInterval = setInterval(() => {
+            prepareTime--;
+            countdownEl.textContent = prepareTime;
+            if (prepareTime <= 0) {
+                clearInterval(prepareInterval);
+                // Transiciona para o estado 'active' após a preparação
+                gameRef.update({
+                    status: 'active',
+                    currentQuestion: questions[0],
+                    timer: 60
+                });
+            }
+        }, 1000);
     });
 };
 
@@ -129,8 +144,8 @@ const updateUI = (gameData) => {
     const isGamePaused = gameData.status === 'paused';
     const isGameFinished = gameData.status === 'finished';
     const isGameWaiting = gameData.status === 'waiting';
+    const isGamePreparing = gameData.status === 'prepare';
 
-    // Gerencia a visibilidade dos botões
     startBtn.style.display = (isGameWaiting || isGameFinished) ? 'inline-block' : 'none';
     pauseBtn.style.display = isGameActive ? 'inline-block' : 'none';
     resumeBtn.style.display = isGamePaused ? 'inline-block' : 'none';
@@ -138,11 +153,14 @@ const updateUI = (gameData) => {
     restartBtn.style.display = 'inline-block';
     nextRoundBtn.style.display = (gameData.currentQuestionIndex % 10 === 9 && isGamePaused) ? 'inline-block' : 'none';
 
-    // Gerencia o conteúdo da tela principal
     if (isGameWaiting) {
         currentQuestionEl.textContent = 'Pressione "Começar Jogo" para iniciar!';
         gameInfo.style.display = 'block';
         qrCodeContainer.style.display = 'flex';
+    } else if (isGamePreparing) {
+        currentQuestionEl.textContent = 'PREPARE-SE PARA AS PERGUNTAS!';
+        gameInfo.style.display = 'block';
+        qrCodeContainer.style.display = 'none';
     } else if (isGameActive) {
         if (gameData.currentQuestion) {
             currentQuestionEl.textContent = `Pergunta ${gameData.currentQuestionIndex + 1}: ${gameData.currentQuestion.pergunta}`;
@@ -152,11 +170,10 @@ const updateUI = (gameData) => {
     } else if (isGamePaused) {
         currentQuestionEl.textContent = 'Rodada Finalizada!';
     } else if (isGameFinished) {
-        currentQuestionEl.textContent = 'Fim do Jogo!';
+        currentQuestionEl.textContent = 'Fim do Jogo! Verifique o placar final.';
         gameTitleEl.textContent = 'Parabéns!';
     }
     
-    // Atualiza o placar
     scoresListEl.innerHTML = '';
     if (gameData.scores) {
         const sortedScores = Object.entries(gameData.scores).sort(([, a], [, b]) => b - a);
