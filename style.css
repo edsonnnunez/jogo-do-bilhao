@@ -1,0 +1,152 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;700&display=swap');
+
+body {
+    background-color: #111;
+    color: #eee;
+    font-family: 'Montserrat', sans-serif;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+h1, h2, h3 {
+    font-family: 'Bebas Neue', cursive;
+    letter-spacing: 2px;
+}
+
+.container {
+    background-color: #222;
+    border: 2px solid #00FFFF;
+    box-shadow: 0 0 20px #00FFFF, 0 0 40px #00FFFF;
+    padding: 30px;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 800px;
+}
+
+.tv-screen {
+    background-color: #000;
+    border: 5px solid #FFD700;
+    box-shadow: 0 0 30px #FFD700;
+    padding: 20px;
+    border-radius: 10px;
+    min-height: 500px;
+}
+
+h1.game-title {
+    font-size: 3em;
+    color: #FFD700;
+    text-shadow: 0 0 10px #FFD700, 0 0 20px #FFD700;
+    margin-bottom: 20px;
+}
+
+.question-box {
+    background: #000;
+    border: 2px solid #00FFFF;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    text-shadow: 0 0 5px #00FFFF;
+}
+
+.timer {
+    font-family: 'Bebas Neue', cursive;
+    font-size: 4em;
+    color: #FFD700;
+    text-shadow: 0 0 10px #FFD700;
+}
+
+.options-list {
+    list-style: none;
+    padding: 0;
+}
+
+.option-btn {
+    width: 100%;
+    padding: 15px;
+    margin: 10px 0;
+    font-size: 1.2em;
+    font-weight: bold;
+    background-color: #333;
+    color: #fff;
+    border: 2px solid #00FFFF;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.option-btn:hover {
+    background-color: #00FFFF;
+    color: #000;
+}
+
+.option-btn.selected {
+    background-color: #FFD700;
+    color: #000;
+}
+
+.controls {
+    margin-top: 20px;
+}
+
+.control-btn {
+    padding: 10px 20px;
+    margin: 5px;
+    font-size: 1em;
+    font-weight: bold;
+    color: #000;
+    background-color: #FFD700;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.control-btn:hover {
+    background-color: #fff;
+}
+
+.scoreboard {
+    margin-top: 30px;
+    text-align: left;
+    color: #eee;
+}
+
+.player-score {
+    padding: 5px 0;
+    border-bottom: 1px solid #555;
+}
+
+/* Player Screen */
+.player-container {
+    background: #111;
+    color: #eee;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.player-screen {
+    background-color: #222;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #00FFFF;
+}
+
+.join-form {
+    text-align: center;
+}
+
+.join-form input {
+    padding: 10px;
+    font-size: 1.2em;
+    width: 80%;
+    margin-bottom: 10px;
+    background: #444;
+    border: 1px solid #00FFFF;
+    color: #eee;
+}

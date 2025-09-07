@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogo do Bilhão - TV</title>
+    <link rel="stylesheet" href="style.css">
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script type="module" src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container tv-screen">
+        <h1 class="game-title">Jogo do Bilhão</h1>
+        
+        <div id="qr-code-container" style="margin: 20px auto; display: flex; flex-direction: column; align-items: center;">
+            <p>Escaneie o QR Code para entrar no jogo:</p>
+            <div id="qrcode"></div>
+        </div>
+
+        <div id="game-info" style="display: none;">
+            <h2 id="current-question-text">Pressione "Começar Jogo" para iniciar!</h2>
+            <div id="countdown" class="timer">60</div>
+        </div>
+        <div class="controls">
+            <button id="start-btn" class="control-btn">Começar Jogo</button>
+            <button id="pause-btn" class="control-btn" style="display: none;">Pausar</button>
+            <button id="resume-btn" class="control-btn" style="display: none;">Continuar</button>
+            <button id="next-btn" class="control-btn" style="display: none;">Próxima Pergunta</button>
+            <button id="restart-btn" class="control-btn">Reiniciar Jogo</button>
+            <button id="next-round-btn" class="control-btn" style="display: none;">Próxima Rodada</button>
+        </div>
+        <div id="scoreboard" class="scoreboard">
+            <h2>Placar</h2>
+            <div id="scores-list"></div>
+        </div>
+    </div>
+
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

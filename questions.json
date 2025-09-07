@@ -1,0 +1,38 @@
+[
+  {
+    "pergunta": "Qual empresa é conhecida pelo sistema operacional Android?",
+    "opcoes": [
+      "Apple",
+      "Microsoft",
+      "Google"
+    ],
+    "respostaCorreta": "Google"
+  },
+  {
+    "pergunta": "O que significa a sigla 'URL'?",
+    "opcoes": [
+      "Universal Resource Locator",
+      "Uniform Resource Link",
+      "Unified Retrieval Language"
+    ],
+    "respostaCorreta": "Universal Resource Locator"
+  },
+  {
+    "pergunta": "Qual a moeda virtual mais famosa do mundo?",
+    "opcoes": [
+      "Ethereum",
+      "Ripple",
+      "Bitcoin"
+    ],
+    "respostaCorreta": "Bitcoin"
+  },
+  {
+    "pergunta": "Em qual ano a Apple lançou o primeiro iPhone?",
+    "opcoes": [
+      "2005",
+      "2007",
+      "2009"
+    ],
+    "respostaCorreta": "2007"
+  }
+]

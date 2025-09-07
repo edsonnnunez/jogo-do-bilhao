@@ -1,0 +1,32 @@
+!DOCTYPE html
+html lang=pt-br
+head
+    meta charset=UTF-8
+    meta name=viewport content=width=device-width, initial-scale=1.0
+    titleJogo do Bilhão - Jogadortitle
+    link rel=stylesheet href=style.css
+    script type=module src=httpswww.gstatic.comfirebasejs9.6.1firebase-app-compat.jsscript
+    script type=module src=httpswww.gstatic.comfirebasejs9.6.1firebase-database-compat.jsscript
+head
+body
+    div class=player-container
+        div id=join-screen class=player-screen join-form
+            h1 class=game-titleEntrar no Jogoh1
+            input type=text id=player-name placeholder=Digite seu nome
+            button id=join-btn class=control-btnConectarbutton
+        div
+
+        div id=game-screen class=player-screen style=display none;
+            h1 id=player-welcomeh1
+            div id=question-area class=question-box
+                p id=player-questionAguardando a próxima pergunta...p
+                div id=player-optionsdiv
+            div
+            p id=player-statusp
+        div
+    div
+
+    script type=module src=firebase-config.jsscript
+    script type=module src=player.jsscript
+body
+html
