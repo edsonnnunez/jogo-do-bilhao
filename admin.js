@@ -24,7 +24,7 @@ const gameTitleEl = document.querySelector('.game-title');
 const startSound = new Audio('assets/start_game.mp3');
 const countdownSound = new Audio('assets/countdown.mp3');
 const winRoundSound = new Audio('assets/win_round.mp3');
-const finalWinSound = new Audio('assets/final_win.mp3');
+const finalWinSound = new Audio('assets/final_win.mp2');
 
 // --- Funções de Controle ---
 
@@ -37,6 +37,7 @@ const resetGame = () => {
         currentQuestion: null,
         timer: 60
     });
+    // Força a mudança de tela para o estado de espera
     qrCodeContainer.style.display = 'flex';
     gameInfo.style.display = 'none';
     startBtn.style.display = 'inline-block';
@@ -45,41 +46,32 @@ const resetGame = () => {
 };
 
 const loadQuestions = async () => {
-    const response = await fetch('questions.json');
-    questions = await response.json();
-    console.log("Perguntas carregadas:", questions);
-    if (questions.length > 0) {
-        console.log("Perguntas carregadas com sucesso. Pronto para iniciar o jogo.");
-    } else {
-        console.error("Nenhuma pergunta encontrada no arquivo questions.json.");
+    try {
+        const response = await fetch('questions.json');
+        questions = await response.json();
+        console.log("Perguntas carregadas com sucesso.");
+    } catch (error) {
+        console.error("Erro ao carregar as perguntas:", error);
+        questions = [];
     }
 };
 
 const startGame = () => {
-    console.log("Botão Começar Jogo clicado.");
-
+    console.log("Botão 'Começar Jogo' clicado!");
+    
     if (!questions || questions.length === 0) {
         console.error("As perguntas não foram carregadas. Não é possível iniciar o jogo.");
-        return; // Impede que o jogo comece sem as perguntas
+        // Exibe uma mensagem de erro na tela para o usuário
+        currentQuestionEl.textContent = "Erro: Perguntas não carregadas. Tente recarregar a página.";
+        return; 
     }
     
-    gameRef.update({ status: 'active', currentQuestionIndex: 0 })
-        .then(() => {
-            console.log("Status do jogo atualizado para 'active' no Firebase.");
-            qrCodeContainer.style.display = 'none';
-            gameInfo.style.display = 'block';
-            startSound.pause();
-            startSound.currentTime = 0;
-            updateUI({
-                status: 'active',
-                currentQuestionIndex: 0,
-                currentQuestion: questions[0]
-            });
-            startTimer();
-        })
-        .catch((error) => {
-            console.error("Erro ao iniciar o jogo no Firebase:", error);
-        });
+    // Atualiza o estado no Firebase
+    gameRef.update({ 
+        status: 'active', 
+        currentQuestionIndex: 0,
+        currentQuestion: questions[0]
+    });
 };
 
 const startTimer = () => {
@@ -120,8 +112,6 @@ const nextQuestion = () => {
                     currentQuestionIndex: nextIndex,
                     currentQuestion: nextQuestion,
                     status: 'active'
-                }).then(() => {
-                    startTimer();
                 });
             }
         } else {
@@ -140,6 +130,7 @@ const updateUI = (gameData) => {
     const isGameFinished = gameData.status === 'finished';
     const isGameWaiting = gameData.status === 'waiting';
 
+    // Gerencia a visibilidade dos botões
     startBtn.style.display = (isGameWaiting || isGameFinished) ? 'inline-block' : 'none';
     pauseBtn.style.display = isGameActive ? 'inline-block' : 'none';
     resumeBtn.style.display = isGamePaused ? 'inline-block' : 'none';
@@ -147,6 +138,7 @@ const updateUI = (gameData) => {
     restartBtn.style.display = 'inline-block';
     nextRoundBtn.style.display = (gameData.currentQuestionIndex % 10 === 9 && isGamePaused) ? 'inline-block' : 'none';
 
+    // Gerencia o conteúdo da tela principal
     if (isGameWaiting) {
         currentQuestionEl.textContent = 'Pressione "Começar Jogo" para iniciar!';
         gameInfo.style.display = 'block';
@@ -164,6 +156,7 @@ const updateUI = (gameData) => {
         gameTitleEl.textContent = 'Parabéns!';
     }
     
+    // Atualiza o placar
     scoresListEl.innerHTML = '';
     if (gameData.scores) {
         const sortedScores = Object.entries(gameData.scores).sort(([, a], [, b]) => b - a);
@@ -176,6 +169,7 @@ const updateUI = (gameData) => {
     }
 };
 
+// Event Listeners
 startBtn.addEventListener('click', startGame);
 pauseBtn.addEventListener('click', () => gameRef.update({ status: 'paused' }));
 resumeBtn.addEventListener('click', () => gameRef.update({ status: 'active' }));
@@ -193,6 +187,7 @@ nextRoundBtn.addEventListener('click', () => {
     });
 });
 
+// Listener principal do Firebase
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     updateUI(gameData);
@@ -208,6 +203,7 @@ gameRef.on('value', (snapshot) => {
     }
 });
 
+// Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     loadQuestions().then(() => {
         resetGame();
