@@ -35,7 +35,7 @@ const resetGame = () => {
         currentQuestionIndex: -1,
         scores: {},
         currentQuestion: null,
-        timer: 60
+        timer: 15 // Tempo ajustado para 15 segundos
     });
     qrCodeContainer.style.display = 'flex';
     gameInfo.style.display = 'none';
@@ -67,10 +67,9 @@ const startGame = () => {
     gameRef.update({ 
         status: 'prepare', 
         currentQuestionIndex: 0,
-        currentQuestion: null, // Limpa a pergunta enquanto prepara
+        currentQuestion: null,
         timer: 5
     }).then(() => {
-        // Inicia a contagem de preparação
         let prepareTime = 5;
         countdownEl.textContent = prepareTime;
         const prepareInterval = setInterval(() => {
@@ -78,11 +77,12 @@ const startGame = () => {
             countdownEl.textContent = prepareTime;
             if (prepareTime <= 0) {
                 clearInterval(prepareInterval);
-                // Transiciona para o estado 'active' após a preparação
                 gameRef.update({
                     status: 'active',
                     currentQuestion: questions[0],
-                    timer: 60
+                    timer: 15 // Tempo da primeira pergunta
+                }).then(() => {
+                    startTimer();
                 });
             }
         }, 1000);
@@ -91,7 +91,7 @@ const startGame = () => {
 
 const startTimer = () => {
     clearInterval(timerInterval);
-    let timeLeft = 60;
+    let timeLeft = 15; // Tempo inicial de 15 segundos
     countdownEl.textContent = timeLeft;
     gameRef.update({ timer: timeLeft });
 
@@ -126,7 +126,8 @@ const nextQuestion = () => {
                 gameRef.update({
                     currentQuestionIndex: nextIndex,
                     currentQuestion: nextQuestion,
-                    status: 'active'
+                    status: 'active',
+                    timer: 15 // Tempo reiniciado para 15 segundos
                 });
             }
         } else {
@@ -186,7 +187,6 @@ const updateUI = (gameData) => {
     }
 };
 
-// Event Listeners
 startBtn.addEventListener('click', startGame);
 pauseBtn.addEventListener('click', () => gameRef.update({ status: 'paused' }));
 resumeBtn.addEventListener('click', () => gameRef.update({ status: 'active' }));
@@ -199,12 +199,12 @@ nextRoundBtn.addEventListener('click', () => {
         gameRef.update({
             currentQuestionIndex: nextIndex,
             currentQuestion: questions[nextIndex],
-            status: 'active'
+            status: 'active',
+            timer: 15 // Tempo da próxima rodada
         });
     });
 });
 
-// Listener principal do Firebase
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     updateUI(gameData);
@@ -220,7 +220,6 @@ gameRef.on('value', (snapshot) => {
     }
 });
 
-// Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     loadQuestions().then(() => {
         resetGame();
