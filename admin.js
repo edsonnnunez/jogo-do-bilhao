@@ -69,35 +69,21 @@ const startGame = () => {
         currentQuestionIndex: 0,
         currentQuestion: null,
         timer: 5
-    }).then(() => {
-        let prepareTime = 5;
-        countdownEl.textContent = prepareTime;
-        const prepareInterval = setInterval(() => {
-            prepareTime--;
-            countdownEl.textContent = prepareTime;
-            if (prepareTime <= 0) {
-                clearInterval(prepareInterval);
-                gameRef.update({
-                    status: 'active',
-                    currentQuestion: questions[0],
-                    timer: 15
-                }).then(() => {
-                    startTimer();
-                });
-            }
-        }, 1000);
     });
 };
 
 const startTimer = () => {
     clearInterval(timerInterval);
     let timeLeft = 15;
-    countdownEl.textContent = timeLeft;
-    gameRef.update({ timer: timeLeft });
-
+    
+    // Atualiza o tempo na tela da TV e no Firebase a cada segundo
     timerInterval = setInterval(() => {
         timeLeft--;
+        
+        // Atualiza o tempo na tela local
         countdownEl.textContent = timeLeft;
+
+        // E também no Firebase para os jogadores
         gameRef.update({ timer: timeLeft });
 
         if (timeLeft <= 5 && timeLeft > 0) {
@@ -129,7 +115,7 @@ const nextQuestion = () => {
                     status: 'active',
                     timer: 15
                 }).then(() => {
-                    startTimer();
+                    startTimer(); // Inicia o timer da nova pergunta
                 });
             }
         } else {
@@ -187,7 +173,7 @@ const updateUI = (gameData) => {
             scoresListEl.appendChild(scoreItem);
         });
     }
-    
+
     if (gameData.timer !== undefined) {
       countdownEl.textContent = gameData.timer;
     }
@@ -221,12 +207,6 @@ nextRoundBtn.addEventListener('click', () => {
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     updateUI(gameData);
-    if (gameData && gameData.status === 'active' && timerInterval === null) {
-        startTimer();
-    } else if (gameData && gameData.status !== 'active' && timerInterval !== null) {
-        clearInterval(timerInterval);
-        timerInterval = null;
-    }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
