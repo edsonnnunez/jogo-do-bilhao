@@ -64,7 +64,6 @@ const startGame = () => {
         return; 
     }
     
-    // Altera o estado para 'prepare'. O listener do Firebase se encarrega do resto.
     gameRef.update({ 
         status: 'prepare', 
         currentQuestionIndex: 0,
@@ -98,6 +97,7 @@ const startTimer = () => {
 
 const nextQuestion = () => {
     console.log("Função nextQuestion chamada.");
+    clearInterval(timerInterval);
     gameRef.once('value', (snapshot) => {
         const gameData = snapshot.val();
         let nextIndex = gameData.currentQuestionIndex + 1;
@@ -113,6 +113,8 @@ const nextQuestion = () => {
                     currentQuestion: nextQuestion,
                     status: 'active',
                     timer: 15
+                }).then(() => {
+                    startTimer();
                 });
             }
         } else {
@@ -148,7 +150,6 @@ const updateUI = (gameData) => {
         gameInfo.style.display = 'block';
         qrCodeContainer.style.display = 'none';
         
-        // Lógica de contagem para o estado de preparação
         let prepareTime = gameData.timer;
         const prepareInterval = setInterval(() => {
             prepareTime--;
@@ -161,7 +162,6 @@ const updateUI = (gameData) => {
                     currentQuestion: questions[0],
                     timer: 15
                 }).then(() => {
-                    // Após a transição, a tela da TV inicia o timer
                     startTimer();
                 });
             }
@@ -183,10 +183,21 @@ const updateUI = (gameData) => {
     scoresListEl.innerHTML = '';
     if (gameData.scores) {
         const sortedScores = Object.entries(gameData.scores).sort(([, a], [, b]) => b - a);
-        sortedScores.forEach(([player, score]) => {
+        sortedScores.forEach(([player, score], index) => {
             const scoreItem = document.createElement('div');
             scoreItem.className = 'player-score';
-            scoreItem.textContent = `${player}: ${score} pontos`;
+            
+            // Adiciona o destaque para os 3 primeiros colocados
+            if (index === 0) {
+                scoreItem.innerHTML = `<span style="font-size: 24px; color: gold;">1º 👑 ${player}: ${score} pontos</span>`;
+            } else if (index === 1) {
+                scoreItem.innerHTML = `<span style="font-size: 20px; color: silver;">2º ⭐ ${player}: ${score} pontos</span>`;
+            } else if (index === 2) {
+                scoreItem.innerHTML = `<span style="font-size: 18px; color: #cd7f32;">3º 🏆 ${player}: ${score} pontos</span>`;
+            } else {
+                scoreItem.textContent = `${player}: ${score} pontos`;
+            }
+
             scoresListEl.appendChild(scoreItem);
         });
     }
@@ -198,11 +209,15 @@ const updateUI = (gameData) => {
 
 startBtn.addEventListener('click', startGame);
 pauseBtn.addEventListener('click', () => {
+    console.log("Jogo pausado.");
     clearInterval(timerInterval);
     gameRef.update({ status: 'paused' });
 });
 resumeBtn.addEventListener('click', () => {
-    gameRef.update({ status: 'active' });
+    console.log("Jogo retomado.");
+    gameRef.update({ status: 'active' }).then(() => {
+      startTimer();
+    });
 });
 nextBtn.addEventListener('click', nextQuestion);
 restartBtn.addEventListener('click', resetGame);
@@ -215,6 +230,8 @@ nextRoundBtn.addEventListener('click', () => {
             currentQuestion: questions[nextIndex],
             status: 'active',
             timer: 15
+        }).then(() => {
+            startTimer();
         });
     });
 });
