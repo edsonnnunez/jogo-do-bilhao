@@ -12,6 +12,7 @@ const playerNameInput = document.getElementById('player-name');
 const playerQuestionEl = document.getElementById('player-question');
 const playerOptionsEl = document.getElementById('player-options');
 const playerStatusEl = document.getElementById('player-status');
+const playerTimerEl = document.getElementById('player-timer'); // Novo elemento
 
 const joinGame = () => {
     playerName = playerNameInput.value.trim();
@@ -43,7 +44,6 @@ const handleAnswer = (selectedOption) => {
 
 joinBtn.addEventListener('click', joinGame);
 
-// Listener do Firebase para o jogador
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     if (!gameData) {
@@ -89,5 +89,9 @@ gameRef.on('value', (snapshot) => {
         playerQuestionEl.textContent = 'Fim do Jogo! Verifique a TV para o resultado final.';
         playerOptionsEl.innerHTML = '';
         playerStatusEl.textContent = '';
+    }
+
+    if (gameData.timer !== undefined) {
+      playerTimerEl.textContent = gameData.timer;
     }
 });
