@@ -64,29 +64,12 @@ const startGame = () => {
         return; 
     }
     
+    // Altera o estado para 'prepare'. O listener do Firebase se encarrega do resto.
     gameRef.update({ 
         status: 'prepare', 
         currentQuestionIndex: 0,
         currentQuestion: null,
         timer: 5
-    }).then(() => {
-        let prepareTime = 5;
-        countdownEl.textContent = prepareTime;
-        const prepareInterval = setInterval(() => {
-            prepareTime--;
-            countdownEl.textContent = prepareTime;
-            if (prepareTime <= 0) {
-                clearInterval(prepareInterval);
-                gameRef.update({
-                    status: 'active',
-                    currentQuestion: questions[0],
-                    timer: 15
-                }).then(() => {
-                    // Após a atualização, a tela da TV inicia o timer
-                    startTimer();
-                });
-            }
-        }, 1000);
     });
 };
 
@@ -130,9 +113,6 @@ const nextQuestion = () => {
                     currentQuestion: nextQuestion,
                     status: 'active',
                     timer: 15
-                }).then(() => {
-                    // Inicia o timer para a próxima pergunta
-                    startTimer();
                 });
             }
         } else {
@@ -167,6 +147,26 @@ const updateUI = (gameData) => {
         currentQuestionEl.textContent = 'PREPARE-SE PARA AS PERGUNTAS!';
         gameInfo.style.display = 'block';
         qrCodeContainer.style.display = 'none';
+        
+        // Lógica de contagem para o estado de preparação
+        let prepareTime = gameData.timer;
+        const prepareInterval = setInterval(() => {
+            prepareTime--;
+            countdownEl.textContent = prepareTime;
+            gameRef.update({ timer: prepareTime });
+            if (prepareTime <= 0) {
+                clearInterval(prepareInterval);
+                gameRef.update({
+                    status: 'active',
+                    currentQuestion: questions[0],
+                    timer: 15
+                }).then(() => {
+                    // Após a transição, a tela da TV inicia o timer
+                    startTimer();
+                });
+            }
+        }, 1000);
+
     } else if (isGameActive) {
         if (gameData.currentQuestion) {
             currentQuestionEl.textContent = `Pergunta ${gameData.currentQuestionIndex + 1}: ${gameData.currentQuestion.pergunta}`;
@@ -191,24 +191,18 @@ const updateUI = (gameData) => {
         });
     }
     
-    // O tempo é atualizado aqui. Não há mais lógica de timer aqui.
-    if (gameData.timer !== undefined) {
+    if (gameData.timer !== undefined && !isGamePreparing) {
       countdownEl.textContent = gameData.timer;
     }
 };
 
-// Event Listeners
 startBtn.addEventListener('click', startGame);
 pauseBtn.addEventListener('click', () => {
-    console.log("Jogo pausado.");
     clearInterval(timerInterval);
     gameRef.update({ status: 'paused' });
 });
 resumeBtn.addEventListener('click', () => {
-    console.log("Jogo retomado.");
-    gameRef.update({ status: 'active' }).then(() => {
-      startTimer();
-    });
+    gameRef.update({ status: 'active' });
 });
 nextBtn.addEventListener('click', nextQuestion);
 restartBtn.addEventListener('click', resetGame);
@@ -221,19 +215,15 @@ nextRoundBtn.addEventListener('click', () => {
             currentQuestion: questions[nextIndex],
             status: 'active',
             timer: 15
-        }).then(() => {
-            startTimer();
         });
     });
 });
 
-// Listener principal do Firebase
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     updateUI(gameData);
 });
 
-// Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     loadQuestions().then(() => {
         resetGame();
