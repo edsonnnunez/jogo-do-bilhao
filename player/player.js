@@ -20,7 +20,7 @@ const joinGame = () => {
         gameScreen.style.display = 'block';
         document.getElementById('player-welcome').textContent = `Bem-vindo, ${playerName}!`;
         gameRef.child(`scores/${playerName}`).set(0);
-        playerStatusEl.textContent = 'Aguardando o jogo começar...'; // Mensagem de espera
+        playerStatusEl.textContent = 'Aguardando o administrador iniciar o jogo...'; // Mensagem de espera
     }
 };
 
@@ -46,17 +46,20 @@ joinBtn.addEventListener('click', joinGame);
 // Listener do Firebase para o jogador
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
-    if (!gameData) return;
+    if (!gameData) {
+        console.error("Dados do jogo não encontrados no Firebase.");
+        return;
+    }
 
     if (gameData.status === 'waiting') {
         playerQuestionEl.textContent = 'Aguardando o jogo começar...';
         playerOptionsEl.innerHTML = '';
-        playerStatusEl.textContent = '';
+        playerStatusEl.textContent = 'Conectado. Aguardando a partida iniciar.';
     } else if (gameData.currentQuestion && gameData.status === 'active') {
         const question = gameData.currentQuestion;
         playerQuestionEl.textContent = question.pergunta;
         playerOptionsEl.innerHTML = '';
-        playerStatusEl.textContent = '';
+        playerStatusEl.textContent = 'Escolha sua resposta!';
         
         question.opcoes.forEach(option => {
             const button = document.createElement('button');
@@ -68,8 +71,10 @@ gameRef.on('value', (snapshot) => {
     } else if (gameData.status === 'paused') {
         playerQuestionEl.textContent = 'Rodada finalizada. Aguardando a próxima...';
         playerOptionsEl.innerHTML = '';
+        playerStatusEl.textContent = 'Placar atualizado. Olhe para a TV!';
     } else if (gameData.status === 'finished') {
         playerQuestionEl.textContent = 'Fim do Jogo! Verifique a TV para o resultado final.';
         playerOptionsEl.innerHTML = '';
+        playerStatusEl.textContent = '';
     }
 });
