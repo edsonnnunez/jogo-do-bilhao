@@ -1,0 +1,74 @@
+import { firebaseConfig } from './firebase-config.js';
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+const gameRef = database.ref('game');
+let playerName = '';
+
+const joinScreen = document.getElementById('join-screen');
+const gameScreen = document.getElementById('game-screen');
+const joinBtn = document.getElementById('join-btn');
+const playerNameInput = document.getElementById('player-name');
+const playerQuestionEl = document.getElementById('player-question');
+const playerOptionsEl = document.getElementById('player-options');
+const playerStatusEl = document.getElementById('player-status');
+
+const joinGame = () => {
+    playerName = playerNameInput.value.trim();
+    if (playerName) {
+        joinScreen.style.display = 'none';
+        gameScreen.style.display = 'block';
+        document.getElementById('player-welcome').textContent = `Bem-vindo, ${playerName}!`;
+        // Adiciona o jogador ao placar com pontuação 0
+        gameRef.child(`scores/${playerName}`).set(0);
+    }
+};
+
+const handleAnswer = (selectedOption) => {
+    gameRef.once('value', (snapshot) => {
+        const gameData = snapshot.val();
+        if (gameData && gameData.status === 'active') {
+            const correctAnswer = gameData.currentQuestion.respostaCorreta;
+            let currentScore = gameData.scores[playerName] || 0;
+            if (selectedOption === correctAnswer) {
+                currentScore += 10; // Exemplo de pontuação
+            } else {
+                currentScore = Math.max(0, currentScore - 5); // Penalidade
+            }
+            gameRef.child(`scores/${playerName}`).set(currentScore);
+            playerStatusEl.textContent = `Resposta enviada! Aguarde a próxima pergunta...`;
+        }
+    });
+};
+
+joinBtn.addEventListener('click', joinGame);
+
+// Listener do Firebase para o jogador
+gameRef.on('value', (snapshot) => {
+    const gameData = snapshot.val();
+    if (!gameData) return;
+
+    if (gameData.currentQuestion && gameData.status === 'active') {
+        const question = gameData.currentQuestion;
+        playerQuestionEl.textContent = question.pergunta;
+        playerOptionsEl.innerHTML = '';
+        playerStatusEl.textContent = '';
+        
+        question.opcoes.forEach(option => {
+            const button = document.createElement('button');
+            button.className = 'option-btn';
+            button.textContent = option;
+            button.onclick = () => handleAnswer(option);
+            playerOptionsEl.appendChild(button);
+        });
+    } else if (gameData.status === 'paused') {
+        playerQuestionEl.textContent = 'Rodada finalizada. Aguardando a próxima...';
+        playerOptionsEl.innerHTML = '';
+    } else if (gameData.status === 'finished') {
+        playerQuestionEl.textContent = 'Fim do Jogo! Verifique a TV para o resultado final.';
+        playerOptionsEl.innerHTML = '';
+    } else {
+        playerQuestionEl.textContent = 'Aguardando o jogo começar...';
+        playerOptionsEl.innerHTML = '';
+    }
+});
