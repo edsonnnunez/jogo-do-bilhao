@@ -51,7 +51,6 @@ gameRef.on('value', (snapshot) => {
         return;
     }
     
-    // Log para depuração
     console.log("Estado do jogo no Firebase:", gameData.status);
 
     if (gameData.status === 'waiting') {
@@ -78,7 +77,6 @@ gameRef.on('value', (snapshot) => {
                 playerOptionsEl.appendChild(button);
             });
         } else {
-            // Este caso previne o bug de a pergunta não aparecer
             playerQuestionEl.textContent = 'Aguardando a próxima pergunta...';
             playerOptionsEl.innerHTML = '';
             playerStatusEl.textContent = '';
