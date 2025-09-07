@@ -35,7 +35,7 @@ const resetGame = () => {
         currentQuestionIndex: -1,
         scores: {},
         currentQuestion: null,
-        timer: 15 // Tempo ajustado para 15 segundos
+        timer: 15
     });
     qrCodeContainer.style.display = 'flex';
     gameInfo.style.display = 'none';
@@ -80,9 +80,7 @@ const startGame = () => {
                 gameRef.update({
                     status: 'active',
                     currentQuestion: questions[0],
-                    timer: 15 // Tempo da primeira pergunta
-                }).then(() => {
-                    startTimer();
+                    timer: 15
                 });
             }
         }, 1000);
@@ -91,7 +89,7 @@ const startGame = () => {
 
 const startTimer = () => {
     clearInterval(timerInterval);
-    let timeLeft = 15; // Tempo inicial de 15 segundos
+    let timeLeft = 15;
     countdownEl.textContent = timeLeft;
     gameRef.update({ timer: timeLeft });
 
@@ -127,7 +125,7 @@ const nextQuestion = () => {
                     currentQuestionIndex: nextIndex,
                     currentQuestion: nextQuestion,
                     status: 'active',
-                    timer: 15 // Tempo reiniciado para 15 segundos
+                    timer: 15 // O timer é reiniciado aqui
                 });
             }
         } else {
@@ -168,6 +166,7 @@ const updateUI = (gameData) => {
         }
         gameInfo.style.display = 'block';
         qrCodeContainer.style.display = 'none';
+        startTimer(); // AQUI O TIMER É INICIADO PARA CADA NOVA PERGUNTA
     } else if (isGamePaused) {
         currentQuestionEl.textContent = 'Rodada Finalizada!';
     } else if (isGameFinished) {
@@ -208,11 +207,7 @@ nextRoundBtn.addEventListener('click', () => {
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     updateUI(gameData);
-    if (gameData && gameData.status === 'active' && gameData.currentQuestionIndex !== -1) {
-        if (!timerInterval) {
-            startTimer();
-        }
-    } else {
+    if (gameData && gameData.status !== 'active') {
         clearInterval(timerInterval);
         timerInterval = null;
         countdownSound.pause();
