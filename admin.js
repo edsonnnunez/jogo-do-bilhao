@@ -69,21 +69,36 @@ const startGame = () => {
         currentQuestionIndex: 0,
         currentQuestion: null,
         timer: 5
+    }).then(() => {
+        let prepareTime = 5;
+        countdownEl.textContent = prepareTime;
+        const prepareInterval = setInterval(() => {
+            prepareTime--;
+            countdownEl.textContent = prepareTime;
+            if (prepareTime <= 0) {
+                clearInterval(prepareInterval);
+                gameRef.update({
+                    status: 'active',
+                    currentQuestion: questions[0],
+                    timer: 15
+                }).then(() => {
+                    // Após a atualização, a tela da TV inicia o timer
+                    startTimer();
+                });
+            }
+        }, 1000);
     });
 };
 
 const startTimer = () => {
+    console.log("Timer iniciado.");
     clearInterval(timerInterval);
     let timeLeft = 15;
+    countdownEl.textContent = timeLeft;
     
-    // Atualiza o tempo na tela da TV e no Firebase a cada segundo
     timerInterval = setInterval(() => {
         timeLeft--;
-        
-        // Atualiza o tempo na tela local
         countdownEl.textContent = timeLeft;
-
-        // E também no Firebase para os jogadores
         gameRef.update({ timer: timeLeft });
 
         if (timeLeft <= 5 && timeLeft > 0) {
@@ -91,6 +106,7 @@ const startTimer = () => {
         }
 
         if (timeLeft <= 0) {
+            console.log("Tempo esgotado. Próxima pergunta.");
             clearInterval(timerInterval);
             nextQuestion();
         }
@@ -98,7 +114,7 @@ const startTimer = () => {
 };
 
 const nextQuestion = () => {
-    clearInterval(timerInterval);
+    console.log("Função nextQuestion chamada.");
     gameRef.once('value', (snapshot) => {
         const gameData = snapshot.val();
         let nextIndex = gameData.currentQuestionIndex + 1;
@@ -115,7 +131,8 @@ const nextQuestion = () => {
                     status: 'active',
                     timer: 15
                 }).then(() => {
-                    startTimer(); // Inicia o timer da nova pergunta
+                    // Inicia o timer para a próxima pergunta
+                    startTimer();
                 });
             }
         } else {
@@ -173,19 +190,25 @@ const updateUI = (gameData) => {
             scoresListEl.appendChild(scoreItem);
         });
     }
-
+    
+    // O tempo é atualizado aqui. Não há mais lógica de timer aqui.
     if (gameData.timer !== undefined) {
       countdownEl.textContent = gameData.timer;
     }
 };
 
+// Event Listeners
 startBtn.addEventListener('click', startGame);
 pauseBtn.addEventListener('click', () => {
+    console.log("Jogo pausado.");
     clearInterval(timerInterval);
     gameRef.update({ status: 'paused' });
 });
 resumeBtn.addEventListener('click', () => {
-    gameRef.update({ status: 'active' });
+    console.log("Jogo retomado.");
+    gameRef.update({ status: 'active' }).then(() => {
+      startTimer();
+    });
 });
 nextBtn.addEventListener('click', nextQuestion);
 restartBtn.addEventListener('click', resetGame);
@@ -204,11 +227,13 @@ nextRoundBtn.addEventListener('click', () => {
     });
 });
 
+// Listener principal do Firebase
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     updateUI(gameData);
 });
 
+// Inicialização
 document.addEventListener('DOMContentLoaded', () => {
     loadQuestions().then(() => {
         resetGame();
