@@ -20,7 +20,7 @@ const joinGame = () => {
         gameScreen.style.display = 'block';
         document.getElementById('player-welcome').textContent = `Bem-vindo, ${playerName}!`;
         gameRef.child(`scores/${playerName}`).set(0);
-        playerStatusEl.textContent = 'Aguardando o administrador iniciar o jogo...'; // Mensagem de espera
+        playerStatusEl.textContent = 'Aguardando o administrador iniciar o jogo...';
     }
 };
 
@@ -55,6 +55,10 @@ gameRef.on('value', (snapshot) => {
         playerQuestionEl.textContent = 'Aguardando o jogo começar...';
         playerOptionsEl.innerHTML = '';
         playerStatusEl.textContent = 'Conectado. Aguardando a partida iniciar.';
+    } else if (gameData.status === 'prepare') {
+        playerQuestionEl.textContent = 'PREPARE-SE PARA AS PERGUNTAS!';
+        playerOptionsEl.innerHTML = '';
+        playerStatusEl.textContent = 'Aguarde a contagem regressiva...';
     } else if (gameData.currentQuestion && gameData.status === 'active') {
         const question = gameData.currentQuestion;
         playerQuestionEl.textContent = question.pergunta;
