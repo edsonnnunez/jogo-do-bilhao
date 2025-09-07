@@ -1,4 +1,4 @@
-import { firebaseConfig } from './firebase-config.js';
+import { firebaseConfig } from '../firebase-config.js';
 
 firebase.initializeApp(firebaseConfig);
 const database = firebase.database();
@@ -19,8 +19,8 @@ const joinGame = () => {
         joinScreen.style.display = 'none';
         gameScreen.style.display = 'block';
         document.getElementById('player-welcome').textContent = `Bem-vindo, ${playerName}!`;
-        // Adiciona o jogador ao placar com pontuação 0
         gameRef.child(`scores/${playerName}`).set(0);
+        playerStatusEl.textContent = 'Aguardando o jogo começar...'; // Mensagem de espera
     }
 };
 
@@ -31,9 +31,9 @@ const handleAnswer = (selectedOption) => {
             const correctAnswer = gameData.currentQuestion.respostaCorreta;
             let currentScore = gameData.scores[playerName] || 0;
             if (selectedOption === correctAnswer) {
-                currentScore += 10; // Exemplo de pontuação
+                currentScore += 10;
             } else {
-                currentScore = Math.max(0, currentScore - 5); // Penalidade
+                currentScore = Math.max(0, currentScore - 5);
             }
             gameRef.child(`scores/${playerName}`).set(currentScore);
             playerStatusEl.textContent = `Resposta enviada! Aguarde a próxima pergunta...`;
@@ -48,7 +48,11 @@ gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     if (!gameData) return;
 
-    if (gameData.currentQuestion && gameData.status === 'active') {
+    if (gameData.status === 'waiting') {
+        playerQuestionEl.textContent = 'Aguardando o jogo começar...';
+        playerOptionsEl.innerHTML = '';
+        playerStatusEl.textContent = '';
+    } else if (gameData.currentQuestion && gameData.status === 'active') {
         const question = gameData.currentQuestion;
         playerQuestionEl.textContent = question.pergunta;
         playerOptionsEl.innerHTML = '';
@@ -66,9 +70,6 @@ gameRef.on('value', (snapshot) => {
         playerOptionsEl.innerHTML = '';
     } else if (gameData.status === 'finished') {
         playerQuestionEl.textContent = 'Fim do Jogo! Verifique a TV para o resultado final.';
-        playerOptionsEl.innerHTML = '';
-    } else {
-        playerQuestionEl.textContent = 'Aguardando o jogo começar...';
         playerOptionsEl.innerHTML = '';
     }
 });
