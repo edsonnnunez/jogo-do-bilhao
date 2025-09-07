@@ -36,11 +36,9 @@ const resetGame = () => {
         currentQuestion: null,
         timer: 60
     });
-    // Mostra o QR Code ao reiniciar
     qrCodeContainer.style.display = 'flex';
     gameInfo.style.display = 'none';
     startBtn.style.display = 'inline-block';
-    // Para o som de início ao reiniciar
     startSound.pause();
     startSound.currentTime = 0;
 };
@@ -52,13 +50,10 @@ const loadQuestions = async () => {
 };
 
 const startGame = () => {
-    qrCodeContainer.style.display = 'none'; // Esconde o QR Code
-    gameInfo.style.display = 'block'; // Mostra a tela do jogo
-    
-    // Para o som de início e toca o som do jogo
+    qrCodeContainer.style.display = 'none';
+    gameInfo.style.display = 'block';
     startSound.pause();
     startSound.currentTime = 0;
-
     gameRef.update({ status: 'active', currentQuestionIndex: 0 });
 };
 
@@ -73,7 +68,6 @@ const startTimer = () => {
         countdownEl.textContent = timeLeft;
         gameRef.update({ timer: timeLeft });
 
-        // Toca o som de contagem nos últimos 5 segundos
         if (timeLeft <= 5 && timeLeft > 0) {
             countdownSound.play();
         }
@@ -92,11 +86,9 @@ const nextQuestion = () => {
         let nextIndex = gameData.currentQuestionIndex + 1;
 
         if (nextIndex < questions.length) {
-            // Verifica se é o final de uma rodada
             if (nextIndex % 10 === 0 && nextIndex !== 0) {
                 gameRef.update({ status: 'paused', currentQuestion: null });
                 winRoundSound.play();
-                // O botão de "Próxima Rodada" será exibido aqui
             } else {
                 const nextQuestion = questions[nextIndex];
                 gameRef.update({
@@ -108,7 +100,6 @@ const nextQuestion = () => {
                 });
             }
         } else {
-            // Fim do jogo
             gameRef.update({ status: 'finished' });
             currentQuestionEl.textContent = 'Fim do Jogo! Verifique o placar final.';
             countdownEl.textContent = '0';
@@ -117,30 +108,8 @@ const nextQuestion = () => {
     });
 };
 
-// ... O resto do código permanece o mesmo ...
-// ... Botões e Listener do Firebase ...
-
-startBtn.addEventListener('click', startGame);
-pauseBtn.addEventListener('click', () => gameRef.update({ status: 'paused' }));
-resumeBtn.addEventListener('click', () => gameRef.update({ status: 'active', currentQuestion: questions[gameData.currentQuestionIndex] }));
-nextBtn.addEventListener('click', nextQuestion);
-restartBtn.addEventListener('click', resetGame);
-nextRoundBtn.addEventListener('click', () => {
-    gameRef.once('value', (snapshot) => {
-        const gameData = snapshot.val();
-        const nextIndex = gameData.currentQuestionIndex + 1;
-        gameRef.update({
-            currentQuestionIndex: nextIndex,
-            currentQuestion: questions[nextIndex],
-            status: 'active'
-        });
-    });
-});
-
 const updateUI = (gameData) => {
     if (!gameData) return;
-
-    // Lógica para mostrar/esconder botões e elementos
     const isGameActive = gameData.status === 'active';
     const isGamePaused = gameData.status === 'paused';
     const isGameFinished = gameData.status === 'finished';
@@ -167,7 +136,6 @@ const updateUI = (gameData) => {
         currentQuestionEl.textContent = 'Pressione "Começar Jogo" para iniciar!';
     }
     
-    // Atualiza o placar
     scoresListEl.innerHTML = '';
     if (gameData.scores) {
         const sortedScores = Object.entries(gameData.scores).sort(([, a], [, b]) => b - a);
@@ -180,11 +148,26 @@ const updateUI = (gameData) => {
     }
 };
 
-// Listener do Firebase
+startBtn.addEventListener('click', startGame);
+pauseBtn.addEventListener('click', () => gameRef.update({ status: 'paused' }));
+resumeBtn.addEventListener('click', () => gameRef.update({ status: 'active', currentQuestion: questions[gameData.currentQuestionIndex] }));
+nextBtn.addEventListener('click', nextQuestion);
+restartBtn.addEventListener('click', resetGame);
+nextRoundBtn.addEventListener('click', () => {
+    gameRef.once('value', (snapshot) => {
+        const gameData = snapshot.val();
+        const nextIndex = gameData.currentQuestionIndex + 1;
+        gameRef.update({
+            currentQuestionIndex: nextIndex,
+            currentQuestion: questions[nextIndex],
+            status: 'active'
+        });
+    });
+});
+
 gameRef.on('value', (snapshot) => {
     const gameData = snapshot.val();
     updateUI(gameData);
-
     if (gameData && gameData.status === 'active' && gameData.currentQuestionIndex !== -1) {
         if (!timerInterval) {
             startTimer();
@@ -199,8 +182,7 @@ gameRef.on('value', (snapshot) => {
 
 document.addEventListener('DOMContentLoaded', () => {
     loadQuestions();
-    // Gera o QR Code e toca a música de início em loop
-    const playerUrl = window.location.href.replace('index.html', 'player.html');
+    const playerUrl = window.location.href.replace('index.html', 'player/');
     new QRCode(document.getElementById("qrcode"), {
         text: playerUrl,
         width: 256,
