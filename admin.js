@@ -6,6 +6,7 @@ const gameRef = database.ref('game');
 let questions;
 let timerInterval;
 
+// Elementos da interface
 const startBtn = document.getElementById('start-btn');
 const pauseBtn = document.getElementById('pause-btn');
 const resumeBtn = document.getElementById('resume-btn');
@@ -15,31 +16,21 @@ const nextRoundBtn = document.getElementById('next-round-btn');
 const countdownEl = document.getElementById('countdown');
 const currentQuestionEl = document.getElementById('current-question-text');
 const scoresListEl = document.getElementById('scores-list');
-
-// Novos elementos para o QR Code
 const qrCodeContainer = document.getElementById('qr-code-container');
 const gameInfo = document.getElementById('game-info');
+const gameTitleEl = document.querySelector('.game-title');
 
-// Função para gerar e exibir o QR Code
-const generateQRCode = () => {
-    // Pega o URL da página atual (ex: https://usuario.github.io/projeto/)
-    const baseUrl = window.location.href.split('index.html')[0];
-    const playerUrl = `${baseUrl}player.html`;
-    
-    // Configura e gera o QR Code
-    new QRCode(document.getElementById("qrcode"), {
-        text: playerUrl,
-        width: 256,
-        height: 256,
-        colorDark: "#FFD700",
-        colorLight: "#222222",
-        correctLevel: QRCode.CorrectLevel.H
-    });
-};
+// Sons
+const startSound = new Audio('assets/start_game.mp3');
+const countdownSound = new Audio('assets/countdown.mp3');
+const winRoundSound = new Audio('assets/win_round.mp3');
+const finalWinSound = new Audio('assets/final_win.mp3');
+
+// --- Funções de Controle ---
 
 const resetGame = () => {
     gameRef.set({
-        status: 'paused',
+        status: 'waiting',
         currentQuestionIndex: -1,
         scores: {},
         currentQuestion: null,
@@ -48,6 +39,10 @@ const resetGame = () => {
     // Mostra o QR Code ao reiniciar
     qrCodeContainer.style.display = 'flex';
     gameInfo.style.display = 'none';
+    startBtn.style.display = 'inline-block';
+    // Para o som de início ao reiniciar
+    startSound.pause();
+    startSound.currentTime = 0;
 };
 
 const loadQuestions = async () => {
@@ -59,14 +54,14 @@ const loadQuestions = async () => {
 const startGame = () => {
     qrCodeContainer.style.display = 'none'; // Esconde o QR Code
     gameInfo.style.display = 'block'; // Mostra a tela do jogo
-    resetGame();
-    setTimeout(() => {
-        gameRef.update({ status: 'active', currentQuestionIndex: 0 });
-    }, 500);
+    
+    // Para o som de início e toca o som do jogo
+    startSound.pause();
+    startSound.currentTime = 0;
+
+    gameRef.update({ status: 'active', currentQuestionIndex: 0 });
 };
 
-// ... O resto do código (startTimer, nextQuestion, etc.) permanece o mesmo ...
-// ... Basta copiar e colar o código anterior a partir daqui ...
 const startTimer = () => {
     clearInterval(timerInterval);
     let timeLeft = 60;
@@ -77,6 +72,11 @@ const startTimer = () => {
         timeLeft--;
         countdownEl.textContent = timeLeft;
         gameRef.update({ timer: timeLeft });
+
+        // Toca o som de contagem nos últimos 5 segundos
+        if (timeLeft <= 5 && timeLeft > 0) {
+            countdownSound.play();
+        }
 
         if (timeLeft <= 0) {
             clearInterval(timerInterval);
@@ -92,32 +92,81 @@ const nextQuestion = () => {
         let nextIndex = gameData.currentQuestionIndex + 1;
 
         if (nextIndex < questions.length) {
-            const nextQuestion = questions[nextIndex];
-            gameRef.update({
-                currentQuestionIndex: nextIndex,
-                currentQuestion: nextQuestion
-            }).then(() => {
-                startTimer();
-            });
+            // Verifica se é o final de uma rodada
+            if (nextIndex % 10 === 0 && nextIndex !== 0) {
+                gameRef.update({ status: 'paused', currentQuestion: null });
+                winRoundSound.play();
+                // O botão de "Próxima Rodada" será exibido aqui
+            } else {
+                const nextQuestion = questions[nextIndex];
+                gameRef.update({
+                    currentQuestionIndex: nextIndex,
+                    currentQuestion: nextQuestion,
+                    status: 'active'
+                }).then(() => {
+                    startTimer();
+                });
+            }
         } else {
             // Fim do jogo
             gameRef.update({ status: 'finished' });
-            currentQuestionEl.textContent = 'Fim do Jogo!';
+            currentQuestionEl.textContent = 'Fim do Jogo! Verifique o placar final.';
             countdownEl.textContent = '0';
+            finalWinSound.play();
         }
     });
 };
 
+// ... O resto do código permanece o mesmo ...
+// ... Botões e Listener do Firebase ...
+
+startBtn.addEventListener('click', startGame);
+pauseBtn.addEventListener('click', () => gameRef.update({ status: 'paused' }));
+resumeBtn.addEventListener('click', () => gameRef.update({ status: 'active', currentQuestion: questions[gameData.currentQuestionIndex] }));
+nextBtn.addEventListener('click', nextQuestion);
+restartBtn.addEventListener('click', resetGame);
+nextRoundBtn.addEventListener('click', () => {
+    gameRef.once('value', (snapshot) => {
+        const gameData = snapshot.val();
+        const nextIndex = gameData.currentQuestionIndex + 1;
+        gameRef.update({
+            currentQuestionIndex: nextIndex,
+            currentQuestion: questions[nextIndex],
+            status: 'active'
+        });
+    });
+});
+
 const updateUI = (gameData) => {
     if (!gameData) return;
-    // ... O resto da função updateUI permanece o mesmo ...
-    // Atualiza a pergunta na tela
-    if (gameData.currentQuestion) {
-        currentQuestionEl.textContent = `Pergunta ${gameData.currentQuestionIndex + 1}: ${gameData.currentQuestion.pergunta}`;
-    } else {
-        currentQuestionEl.textContent = "Pressione 'Começar Jogo' para iniciar!";
-    }
 
+    // Lógica para mostrar/esconder botões e elementos
+    const isGameActive = gameData.status === 'active';
+    const isGamePaused = gameData.status === 'paused';
+    const isGameFinished = gameData.status === 'finished';
+
+    startBtn.style.display = (gameData.status === 'waiting' || isGameFinished) ? 'inline-block' : 'none';
+    pauseBtn.style.display = isGameActive ? 'inline-block' : 'none';
+    resumeBtn.style.display = isGamePaused ? 'inline-block' : 'none';
+    nextBtn.style.display = isGameActive ? 'inline-block' : 'none';
+    restartBtn.style.display = 'inline-block';
+    nextRoundBtn.style.display = (gameData.currentQuestionIndex % 10 === 9 && isGamePaused) ? 'inline-block' : 'none';
+
+    if (isGameActive) {
+        if (gameData.currentQuestion) {
+            currentQuestionEl.textContent = `Pergunta ${gameData.currentQuestionIndex + 1}: ${gameData.currentQuestion.pergunta}`;
+        }
+        gameInfo.style.display = 'block';
+        qrCodeContainer.style.display = 'none';
+    } else if (isGamePaused) {
+        currentQuestionEl.textContent = 'Rodada Finalizada!';
+    } else if (isGameFinished) {
+        currentQuestionEl.textContent = 'Fim do Jogo!';
+        gameTitleEl.textContent = 'Parabéns!';
+    } else {
+        currentQuestionEl.textContent = 'Pressione "Começar Jogo" para iniciar!';
+    }
+    
     // Atualiza o placar
     scoresListEl.innerHTML = '';
     if (gameData.scores) {
@@ -129,30 +178,7 @@ const updateUI = (gameData) => {
             scoresListEl.appendChild(scoreItem);
         });
     }
-
-    // Gerencia botões
-    startBtn.style.display = 'none';
-    pauseBtn.style.display = 'inline-block';
-    resumeBtn.style.display = 'none';
-    nextBtn.style.display = 'inline-block';
-    nextRoundBtn.style.display = 'none';
-
-    if (gameData.status === 'paused') {
-        pauseBtn.style.display = 'none';
-        resumeBtn.style.display = 'inline-block';
-    } else if (gameData.status === 'finished') {
-        pauseBtn.style.display = 'none';
-        resumeBtn.style.display = 'none';
-        nextBtn.style.display = 'none';
-        startBtn.style.display = 'inline-block';
-    }
 };
-
-startBtn.addEventListener('click', startGame);
-pauseBtn.addEventListener('click', () => gameRef.update({ status: 'paused' }));
-resumeBtn.addEventListener('click', () => gameRef.update({ status: 'active' }));
-nextBtn.addEventListener('click', nextQuestion);
-restartBtn.addEventListener('click', resetGame);
 
 // Listener do Firebase
 gameRef.on('value', (snapshot) => {
@@ -166,10 +192,23 @@ gameRef.on('value', (snapshot) => {
     } else {
         clearInterval(timerInterval);
         timerInterval = null;
+        countdownSound.pause();
+        countdownSound.currentTime = 0;
     }
 });
 
 document.addEventListener('DOMContentLoaded', () => {
     loadQuestions();
-    generateQRCode(); // Gera o QR Code ao carregar a página
+    // Gera o QR Code e toca a música de início em loop
+    const playerUrl = window.location.href.replace('index.html', 'player.html');
+    new QRCode(document.getElementById("qrcode"), {
+        text: playerUrl,
+        width: 256,
+        height: 256,
+        colorDark: "#FFD700",
+        colorLight: "#222222",
+        correctLevel: QRCode.CorrectLevel.H
+    });
+    startSound.loop = true;
+    startSound.play();
 });
