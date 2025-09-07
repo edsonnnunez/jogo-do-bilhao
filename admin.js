@@ -81,6 +81,8 @@ const startGame = () => {
                     status: 'active',
                     currentQuestion: questions[0],
                     timer: 15
+                }).then(() => {
+                    startTimer();
                 });
             }
         }, 1000);
@@ -126,6 +128,8 @@ const nextQuestion = () => {
                     currentQuestion: nextQuestion,
                     status: 'active',
                     timer: 15
+                }).then(() => {
+                    startTimer();
                 });
             }
         } else {
@@ -166,11 +170,6 @@ const updateUI = (gameData) => {
         }
         gameInfo.style.display = 'block';
         qrCodeContainer.style.display = 'none';
-        
-        // Chamada única do timer para a primeira pergunta ativa.
-        if (gameData.currentQuestionIndex === 0) {
-            startTimer();
-        }
     } else if (isGamePaused) {
         currentQuestionEl.textContent = 'Rodada Finalizada!';
     } else if (isGameFinished) {
@@ -187,6 +186,10 @@ const updateUI = (gameData) => {
             scoreItem.textContent = `${player}: ${score} pontos`;
             scoresListEl.appendChild(scoreItem);
         });
+    }
+    
+    if (gameData.timer !== undefined) {
+      countdownEl.textContent = gameData.timer;
     }
 };
 
@@ -209,6 +212,8 @@ nextRoundBtn.addEventListener('click', () => {
             currentQuestion: questions[nextIndex],
             status: 'active',
             timer: 15
+        }).then(() => {
+            startTimer();
         });
     });
 });
@@ -218,7 +223,7 @@ gameRef.on('value', (snapshot) => {
     updateUI(gameData);
     if (gameData && gameData.status === 'active' && timerInterval === null) {
         startTimer();
-    } else if (gameData && gameData.status !== 'active') {
+    } else if (gameData && gameData.status !== 'active' && timerInterval !== null) {
         clearInterval(timerInterval);
         timerInterval = null;
     }
